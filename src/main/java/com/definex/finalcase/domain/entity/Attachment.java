@@ -29,11 +29,4 @@ public class Attachment extends BaseEntity {
     @NotBlank
     @Column(nullable = false)
     private String filePath;
-
-    @Column(nullable = false)
-    private boolean deleted = false;
-
-    public void softDelete() {
-        this.deleted = true;
-    }
 }

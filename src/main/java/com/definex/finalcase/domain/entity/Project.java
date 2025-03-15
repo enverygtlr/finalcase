@@ -9,8 +9,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Where;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -43,12 +46,6 @@ public class Project extends BaseEntity {
             joinColumns = @JoinColumn(name = "project_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<User> teamMembers = new HashSet<>();
+    private List<User> teamMembers = new ArrayList<>();
 
-    @Column(nullable = false)
-    private boolean deleted = false;
-
-    public void softDelete() {
-        this.deleted = true;
-    }
 }

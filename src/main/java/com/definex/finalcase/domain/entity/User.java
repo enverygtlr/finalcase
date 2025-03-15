@@ -43,11 +43,4 @@ public class User extends BaseEntity {
 
     @ManyToMany(mappedBy = "teamMembers")
     private Set<Project> projects = new HashSet<>();
-
-    @Column(nullable = false)
-    private boolean deleted = false;
-
-    public void softDelete() {
-        this.deleted = true;
-    }
 }

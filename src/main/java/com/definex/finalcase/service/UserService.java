@@ -3,7 +3,7 @@ package com.definex.finalcase.service;
 import com.definex.finalcase.domain.entity.User;
 import com.definex.finalcase.domain.request.UserRequest;
 import com.definex.finalcase.domain.response.UserResponse;
-import com.definex.finalcase.exception.UserNotFound;
+import com.definex.finalcase.exception.UserNotFoundException;
 import com.definex.finalcase.mapper.UserMapper;
 import com.definex.finalcase.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,21 +25,21 @@ public class UserService {
     }
 
     public UserResponse getUserById(UUID id) {
-        User user = userRepository.findActiveUserById(id)
-                .orElseThrow(() -> new UserNotFound());
+        User user = userRepository.findById(id)
+                .orElseThrow(UserNotFoundException::new);
         return userMapper.toResponse(user);
     }
 
     public List<UserResponse> getAllUsers() {
-        return userRepository.findActiveUsers()
+        return userRepository.findAll()
                 .stream()
                 .map(userMapper::toResponse)
                 .toList();
     }
 
     public UserResponse updateUser(UUID id, UserRequest request) {
-        User user = userRepository.findActiveUserById(id)
-                .orElseThrow(() -> new UserNotFound());
+        User user = userRepository.findById(id)
+                .orElseThrow(UserNotFoundException::new);
 
         user.setName(request.name());
         user.setEmail(request.email());
