@@ -4,12 +4,20 @@ import com.definex.finalcase.domain.BaseEntity;
 import com.definex.finalcase.domain.enums.TaskPriority;
 import com.definex.finalcase.domain.enums.TaskState;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "tasks")
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class Task extends BaseEntity {
     @Column(nullable = false)
     private String title;
@@ -41,4 +49,11 @@ public class Task extends BaseEntity {
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = false)
     private List<Attachment> attachments = new ArrayList<>();
+
+    @Column(nullable = false)
+    private boolean deleted = false;
+
+    public void softDelete() {
+        this.deleted = true;
+    }
 }

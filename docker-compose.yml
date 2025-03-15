@@ -1,0 +1,25 @@
+version: '3.9'
+
+services:
+  mysqldb:
+    image: mysql:8.0.28-oracle
+    container_name: finalcase-mysqldb
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'mysql-db'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'password'
+    networks:
+      - 'local-network'
+    ports:
+      - '3306:3306'
+    volumes:
+      - finalcase-mysql-data:/var/lib/finalcase-mysqldb
+
+volumes:
+  finalcase-mysql-data:
+
+networks:
+  local-network:
+    driver: bridge

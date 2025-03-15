@@ -35,7 +35,7 @@ public class Project extends BaseEntity {
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ProjectStatus status;  // IN_PROGRESS, CANCELLED, COMPLETED
+    private ProjectStatus status;
 
     @ManyToMany
     @JoinTable(
@@ -44,4 +44,11 @@ public class Project extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> teamMembers = new HashSet<>();
+
+    @Column(nullable = false)
+    private boolean deleted = false;
+
+    public void softDelete() {
+        this.deleted = true;
+    }
 }

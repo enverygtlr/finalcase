@@ -4,9 +4,19 @@ import com.definex.finalcase.domain.BaseEntity;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "attachments")
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class Attachment extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "task_id", nullable = false)
