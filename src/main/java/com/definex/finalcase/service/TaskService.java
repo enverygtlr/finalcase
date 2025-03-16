@@ -16,6 +16,7 @@ import com.definex.finalcase.repository.ProjectRepository;
 import com.definex.finalcase.repository.TaskRepository;
 import com.definex.finalcase.repository.TaskStateChangeRepository;
 import com.definex.finalcase.repository.UserRepository;
+import com.definex.finalcase.validation.TaskStateValidator;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.transaction.Transactional;
@@ -34,6 +35,7 @@ public class TaskService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final TaskMapper taskMapper;
+    private final TaskStateValidator taskStateValidator;
 
     public TaskResponse createTask(UUID projectId, TaskRequest request) {
         Project project = projectRepository.findById(projectId)
@@ -64,6 +66,8 @@ public class TaskService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
+
+        taskStateValidator.validateStateTransition(task.getState(), newState, reason);
 
         TaskState oldState = task.getState();
         task.setState(newState);

@@ -13,7 +13,13 @@ public enum ErrorMessage implements BaseErrorMessage {
 
     TASK_NOT_FOUND("Task not found", "Task Error"),
     TASK_ALREADY_COMPLETED("Cannot modify a completed task", "Task Error"),
-    INVALID_TASK_STATE("Invalid task state transition", "Task Error");
+
+    COMMENT_NOT_FOUND("Comment not found", "Comment Error"),
+    UNAUTHORIZED_ACTION("You are not allowed to do that action", "Unauthorized Action"),
+
+    INVALID_TASK_STATE("Invalid transition of task states", "Task Error"),
+    MISSING_REASON("A reason must be provided for transition", "Missing reason"),;
+
 
 
     private final String title;

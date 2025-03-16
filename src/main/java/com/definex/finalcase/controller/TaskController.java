@@ -2,8 +2,11 @@ package com.definex.finalcase.controller;
 
 import com.definex.finalcase.domain.enums.TaskPriority;
 import com.definex.finalcase.domain.enums.TaskState;
+import com.definex.finalcase.domain.request.CommentRequest;
 import com.definex.finalcase.domain.request.TaskRequest;
+import com.definex.finalcase.domain.response.CommentResponse;
 import com.definex.finalcase.domain.response.TaskResponse;
+import com.definex.finalcase.service.CommentService;
 import com.definex.finalcase.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,7 @@ import java.util.UUID;
 public class TaskController {
 
     private final TaskService taskService;
+    private final CommentService commentService;
 
     @PostMapping("/{projectId}")
     public ResponseEntity<TaskResponse> createTask(
@@ -66,4 +70,45 @@ public class TaskController {
         TaskResponse updatedTask = taskService.updateTaskPriority(taskId, priority);
         return ResponseEntity.ok(updatedTask);
     }
+
+    //COMMENTS
+    @PostMapping("/{taskId}/comments")
+    public ResponseEntity<CommentResponse> addComment(
+            @PathVariable UUID taskId,
+            @RequestParam UUID userId,
+            @RequestBody @Valid CommentRequest request) {
+        CommentResponse response = commentService.addComment(taskId, userId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/{taskId}/comments")
+    public ResponseEntity<List<CommentResponse>> getCommentsForTask(@PathVariable UUID taskId) {
+        return ResponseEntity.ok(commentService.getCommentsForTask(taskId));
+    }
+
+    @GetMapping("/{taskId}/comments/{commentId}")
+    public ResponseEntity<CommentResponse> getCommentById(
+            @PathVariable UUID taskId, @PathVariable UUID commentId) {
+        return ResponseEntity.ok(commentService.getCommentById(commentId));
+    }
+
+    @PatchMapping("/{taskId}/comments/{commentId}")
+    public ResponseEntity<CommentResponse> updateComment(
+            @PathVariable UUID taskId,
+            @PathVariable UUID commentId,
+            @RequestParam UUID userId,
+            @RequestBody @Valid CommentRequest request) {
+        return ResponseEntity.ok(commentService.updateComment(commentId, userId, request));
+    }
+
+    @DeleteMapping("/{taskId}/comments/{commentId}")
+    public ResponseEntity<Void> deleteComment(
+            @PathVariable UUID taskId,
+            @PathVariable UUID commentId,
+            @RequestParam UUID userId) {
+        commentService.deleteComment(commentId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    //ATTACHMENTS
 }
