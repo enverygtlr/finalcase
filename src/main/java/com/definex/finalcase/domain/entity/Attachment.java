@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.checkerframework.checker.units.qual.N;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.SQLDelete;
@@ -20,6 +21,7 @@ import org.hibernate.annotations.Where;
 @Getter
 @Setter
 public class Attachment extends BaseEntity {
+
     @ManyToOne
     @NotFound(action = NotFoundAction.EXCEPTION)
     @JoinColumn(name = "task_id", nullable = false)
@@ -27,10 +29,18 @@ public class Attachment extends BaseEntity {
 
     @ManyToOne
     @NotFound(action = NotFoundAction.EXCEPTION)
-    @JoinColumn(name = "uploadedBy_id", nullable = false)
+    @JoinColumn(name = "uploaded_by", nullable = false)
     private User uploadedBy;
+
+    @NotBlank
+    @Column(nullable = false, unique = true)
+    private String fileName;
 
     @NotBlank
     @Column(nullable = false)
     private String filePath;
+
+    @NotBlank
+    @Column(nullable = false)
+    private String contentType;
 }

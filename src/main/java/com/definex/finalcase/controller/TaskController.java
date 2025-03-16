@@ -4,15 +4,19 @@ import com.definex.finalcase.domain.enums.TaskPriority;
 import com.definex.finalcase.domain.enums.TaskState;
 import com.definex.finalcase.domain.request.CommentRequest;
 import com.definex.finalcase.domain.request.TaskRequest;
+import com.definex.finalcase.domain.response.AttachmentResponse;
 import com.definex.finalcase.domain.response.CommentResponse;
 import com.definex.finalcase.domain.response.TaskResponse;
+import com.definex.finalcase.service.AttachmentService;
 import com.definex.finalcase.service.CommentService;
 import com.definex.finalcase.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +28,7 @@ public class TaskController {
 
     private final TaskService taskService;
     private final CommentService commentService;
+    private final AttachmentService attachmentService;
 
     @PostMapping("/{projectId}")
     public ResponseEntity<TaskResponse> createTask(
@@ -111,4 +116,30 @@ public class TaskController {
     }
 
     //ATTACHMENTS
+
+    @PostMapping("/{taskId}/attachments")
+    public ResponseEntity<AttachmentResponse> uploadAttachment(@PathVariable UUID taskId,
+                                                   @RequestParam UUID userId,
+                                                   @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(attachmentService.uploadAttachment(taskId, userId, file));
+    }
+
+    @GetMapping("/{taskId}/attachments")
+    public ResponseEntity<List<AttachmentResponse>> getAttachments(@PathVariable UUID taskId) {
+        return ResponseEntity.ok(attachmentService.getAttachmentsByTask(taskId));
+    }
+
+    @GetMapping("/{taskId}/attachments/{attachmentId}")
+    public ResponseEntity<byte[]> downloadAttachment(@PathVariable UUID attachmentId) {
+        byte[] data = attachmentService.downloadAttachment(attachmentId);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(data);
+    }
+
+    @DeleteMapping("/{taskId}/attachments/{attachmentId}")
+    public ResponseEntity<Void> deleteAttachment(@PathVariable UUID attachmentId) {
+        attachmentService.deleteAttachment(attachmentId);
+        return ResponseEntity.noContent().build();
+    }
 }

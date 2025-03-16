@@ -17,8 +17,6 @@ import com.definex.finalcase.repository.TaskRepository;
 import com.definex.finalcase.repository.TaskStateChangeRepository;
 import com.definex.finalcase.repository.UserRepository;
 import com.definex.finalcase.validation.TaskStateValidator;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

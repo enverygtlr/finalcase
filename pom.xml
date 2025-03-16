@@ -73,6 +73,11 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>RELEASE</version>
+        </dependency>
 
     </dependencies>
 

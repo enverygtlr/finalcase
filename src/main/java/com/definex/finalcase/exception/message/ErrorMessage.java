@@ -18,7 +18,8 @@ public enum ErrorMessage implements BaseErrorMessage {
     UNAUTHORIZED_ACTION("You are not allowed to do that action", "Unauthorized Action"),
 
     INVALID_TASK_STATE("Invalid transition of task states", "Task Error"),
-    MISSING_REASON("A reason must be provided for transition", "Missing reason"),;
+    MISSING_REASON("A reason must be provided for transition", "Missing reason"),
+    ATTACHMENT_NOT_FOUND("Attachment not found", "Attachment Error"),;
 
 
 
