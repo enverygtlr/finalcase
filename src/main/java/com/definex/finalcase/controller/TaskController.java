@@ -6,12 +6,14 @@ import com.definex.finalcase.domain.request.CommentRequest;
 import com.definex.finalcase.domain.request.TaskRequest;
 import com.definex.finalcase.domain.response.AttachmentResponse;
 import com.definex.finalcase.domain.response.CommentResponse;
+import com.definex.finalcase.domain.response.FileResponse;
 import com.definex.finalcase.domain.response.TaskResponse;
 import com.definex.finalcase.service.AttachmentService;
 import com.definex.finalcase.service.CommentService;
 import com.definex.finalcase.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -117,7 +119,7 @@ public class TaskController {
 
     //ATTACHMENTS
 
-    @PostMapping("/{taskId}/attachments")
+    @PostMapping(value = "/{taskId}/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AttachmentResponse> uploadAttachment(@PathVariable UUID taskId,
                                                    @RequestParam UUID userId,
                                                    @RequestParam("file") MultipartFile file) {
@@ -129,12 +131,14 @@ public class TaskController {
         return ResponseEntity.ok(attachmentService.getAttachmentsByTask(taskId));
     }
 
-    @GetMapping("/{taskId}/attachments/{attachmentId}")
+    @GetMapping("/attachments/{attachmentId}")
     public ResponseEntity<byte[]> downloadAttachment(@PathVariable UUID attachmentId) {
-        byte[] data = attachmentService.downloadAttachment(attachmentId);
+        FileResponse fileResponse = attachmentService.downloadAttachment(attachmentId);
+
         return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(data);
+                .contentType(MediaType.parseMediaType(fileResponse.mimeType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileResponse.fileName() + "\"")
+                .body(fileResponse.data());
     }
 
     @DeleteMapping("/{taskId}/attachments/{attachmentId}")

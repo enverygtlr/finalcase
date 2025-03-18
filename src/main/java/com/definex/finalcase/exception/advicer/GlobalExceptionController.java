@@ -2,6 +2,7 @@ package com.definex.finalcase.exception.advicer;
 
 import com.definex.finalcase.exception.advicer.response.ErrorResponse;
 import com.definex.finalcase.exception.base.BaseException;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.context.request.WebRequest;
 import java.time.LocalDateTime;
 
 @ControllerAdvice
+@Hidden
 public class GlobalExceptionController {
 
     @ExceptionHandler({BaseException.class})

@@ -4,6 +4,7 @@ import com.definex.finalcase.domain.entity.Attachment;
 import com.definex.finalcase.domain.entity.Task;
 import com.definex.finalcase.domain.entity.User;
 import com.definex.finalcase.domain.response.AttachmentResponse;
+import com.definex.finalcase.domain.response.FileResponse;
 import com.definex.finalcase.exception.AttachmentNotFoundException;
 import com.definex.finalcase.exception.TaskNotFoundException;
 import com.definex.finalcase.exception.UserNotFoundException;
@@ -38,22 +39,30 @@ public class AttachmentService {
                 .orElseThrow(UserNotFoundException::new);
 
         String fileName = fileManagerService.uploadFile(file);
-        String filePath = "/api/tasks/" + taskId + "/attachments/" + fileName;
         String contentType = file.getContentType();
 
         Attachment attachment = new Attachment();
         attachment.setTask(task);
+        attachment.setExternalFileName(file.getOriginalFilename());
         attachment.setFileName(fileName);
-        attachment.setFilePath(filePath);
         attachment.setContentType(contentType);
+        attachment.setUploadedBy(user);
 
-        return attachmentMapper.toResponse(attachment);
+        attachment = attachmentRepository.save(attachment);
+
+        return attachmentMapper.toResponse(attachmentRepository.save(attachment));
     }
 
-    public byte[] downloadAttachment(UUID attachmentId) {
+    public FileResponse downloadAttachment(UUID attachmentId) {
         Attachment attachment = attachmentRepository.findById(attachmentId)
                 .orElseThrow(AttachmentNotFoundException::new);
-        return fileManagerService.downloadFile(attachment.getFileName());
+        FileResponse response = FileResponse.builder()
+                .fileName(attachment.getExternalFileName())
+                .mimeType(attachment.getContentType())
+                .data(fileManagerService.downloadFile(attachment.getFileName()))
+                .build();
+        
+        return response;
     }
 
     @Transactional

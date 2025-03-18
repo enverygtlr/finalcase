@@ -10,5 +10,10 @@ import org.mapstruct.ReportingPolicy;
 public interface AttachmentMapper {
     @Mapping(source = "task.id", target = "taskId")
     @Mapping(source = "uploadedBy.id", target = "uploadedById")
+    @Mapping(target = "filePath", expression = "java(computeFilePath(attachment))")
     AttachmentResponse toResponse(Attachment attachment);
+
+    default String computeFilePath(Attachment attachment) {
+        return "/api/tasks/attachments/" + attachment.getId();
+    }
 }

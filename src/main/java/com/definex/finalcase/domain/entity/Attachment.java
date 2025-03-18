@@ -36,9 +36,8 @@ public class Attachment extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String fileName;
 
-    @NotBlank
     @Column(nullable = false)
-    private String filePath;
+    private String externalFileName;
 
     @NotBlank
     @Column(nullable = false)
