@@ -16,6 +16,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class DataLoader implements CommandLineRunner {
     private final ProjectRepository projectRepository;
     private final TaskRepository taskRepository;
     private final TaskStateChangeRepository taskStateChangeRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
@@ -46,19 +48,19 @@ public class DataLoader implements CommandLineRunner {
 
         log.info("Initializing Users...");
 
-        User alice = new User();
-        alice.setEmail("alice@example.com");
-        alice.setPassword("{noop}password123");
-        alice.setName("Alice Johnson");
-        alice.setRole(Role.PROJECT_MANAGER);
+        User gokhan = new User();
+        gokhan.setEmail("gokhan.tamkoc@example.com");
+        gokhan.setPassword(passwordEncoder.encode("gokhanpassword"));
+        gokhan.setName("Gökhan Tamkoç");
+        gokhan.setRole(Role.PROJECT_MANAGER);
 
-        User bob = new User();
-        bob.setEmail("bob@example.com");
-        bob.setPassword("{noop}password123");
-        bob.setName("Bob Smith");
-        bob.setRole(Role.TEAM_MEMBER);
+        User enver = new User();
+        enver.setEmail("enver.yigitler@example.com");
+        enver.setPassword(passwordEncoder.encode("enverpassword"));
+        enver.setName("Enver Yiğitler");
+        enver.setRole(Role.TEAM_MEMBER);
 
-        userRepository.saveAll(List.of(alice, bob));
+        userRepository.saveAll(List.of(gokhan, enver));
         log.info("Users initialized.");
     }
 
@@ -70,46 +72,45 @@ public class DataLoader implements CommandLineRunner {
 
         log.info("Initializing Projects & Tasks...");
 
-        User alice = userRepository.findByEmail("alice@example.com")
-                .orElseThrow(() -> new RuntimeException("Alice user not found!"));
-        User bob = userRepository.findByEmail("bob@example.com")
-                .orElseThrow(() -> new RuntimeException("Bob user not found!"));
+        User gokhan = userRepository.findByEmail("gokhan.tamkoc@example.com")
+                .orElseThrow(() -> new RuntimeException("Gökhan user not found!"));
+        User enver = userRepository.findByEmail("enver.yigitler@example.com")
+                .orElseThrow(() -> new RuntimeException("Enver user not found!"));
 
         Project project = new Project();
-        project.setTitle("Task Management System");
-        project.setDescription("A system for managing tasks and tracking their states.");
-        project.setDepartmentName("Engineering");
+        project.setTitle("Görev Yönetim Sistemi");
+        project.setDescription("Görevlerin yönetildiği ve durumlarının takip edildiği bir sistem.");
+        project.setDepartmentName("Mühendislik");
         project.setStatus(ProjectStatus.IN_PROGRESS);
-        project.setTeamMembers(List.of(alice, bob));
+        project.setTeamMembers(List.of(gokhan, enver));
 
         project = projectRepository.save(project);
 
         Task task1 = new Task();
-        task1.setTitle("Setup Backend Architecture");
-        task1.setDescription("Initialize Spring Boot project with dependencies.");
+        task1.setTitle("Backend Mimarisi Kurulumu");
+        task1.setDescription("Spring Boot projesini gerekli bağımlılıklarla başlat.");
         task1.setState(TaskState.BACKLOG);
         task1.setPriority(TaskPriority.HIGH);
         task1.setProject(project);
-        task1.setAssignee(alice);
+        task1.setAssignee(gokhan);
 
         Task task2 = new Task();
-        task2.setTitle("Implement Authentication");
-        task2.setDescription("Setup JWT authentication.");
+        task2.setTitle("Kimlik Doğrulama Sistemi");
+        task2.setDescription("JWT ile kimlik doğrulama sistemini kur.");
         task2.setState(TaskState.IN_ANALYSIS);
         task2.setPriority(TaskPriority.MEDIUM);
         task2.setProject(project);
-        task2.setAssignee(bob);
+        task2.setAssignee(enver);
 
         taskRepository.saveAll(List.of(task1, task2));
 
         TaskStateChange stateChange = new TaskStateChange();
         stateChange.setTask(task2);
-        stateChange.setChangedBy(alice);
+        stateChange.setChangedBy(gokhan);
         stateChange.setOldState(TaskState.BACKLOG);
         stateChange.setNewState(TaskState.IN_ANALYSIS);
-        stateChange.setReason("Requirements gathered.");
+        stateChange.setReason("Gereksinimler toplandı.");
 
         taskStateChangeRepository.save(stateChange);
-
     }
 }

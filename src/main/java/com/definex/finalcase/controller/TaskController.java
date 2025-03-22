@@ -1,22 +1,27 @@
 package com.definex.finalcase.controller;
 
+import com.definex.finalcase.domain.entity.User;
 import com.definex.finalcase.domain.enums.TaskPriority;
 import com.definex.finalcase.domain.enums.TaskState;
 import com.definex.finalcase.domain.request.CommentRequest;
+import com.definex.finalcase.domain.request.ReasonRequest;
+import com.definex.finalcase.domain.request.TaskDescriptionRequest;
 import com.definex.finalcase.domain.request.TaskRequest;
-import com.definex.finalcase.domain.response.AttachmentResponse;
-import com.definex.finalcase.domain.response.CommentResponse;
-import com.definex.finalcase.domain.response.FileResponse;
-import com.definex.finalcase.domain.response.TaskResponse;
+import com.definex.finalcase.domain.response.*;
+import com.definex.finalcase.security.UserPrincipal;
+import com.definex.finalcase.security.permission.AnyTeamRole;
+import com.definex.finalcase.security.permission.ManagerOrLeaderRole;
 import com.definex.finalcase.service.AttachmentService;
 import com.definex.finalcase.service.CommentService;
 import com.definex.finalcase.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,6 +37,7 @@ public class TaskController {
     private final CommentService commentService;
     private final AttachmentService attachmentService;
 
+    @ManagerOrLeaderRole
     @PostMapping("/{projectId}")
     public ResponseEntity<TaskResponse> createTask(
             @PathVariable UUID projectId,
@@ -40,28 +46,32 @@ public class TaskController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
     }
 
+    @AnyTeamRole
     @GetMapping("/{taskId}")
     public ResponseEntity<TaskResponse> getTaskById(@PathVariable UUID taskId) {
         TaskResponse taskResponse = taskService.getTaskById(taskId);
         return ResponseEntity.ok(taskResponse);
     }
 
+    @AnyTeamRole
     @GetMapping("/project/{projectId}")
     public ResponseEntity<List<TaskResponse>> getAllTasksForProject(@PathVariable UUID projectId) {
         List<TaskResponse> tasks = taskService.getAllTasksForProject(projectId);
         return ResponseEntity.ok(tasks);
     }
 
+    @AnyTeamRole
     @PatchMapping("/{taskId}/state/{newState}")
-    public ResponseEntity<TaskResponse> updateTaskState(
+    public ResponseEntity<TaskStateChangeResponse> updateTaskState(
             @PathVariable UUID taskId,
             @PathVariable TaskState newState,
-            @RequestParam UUID userId,
-            @RequestParam(required = false) String reason) {
-        TaskResponse updatedTask = taskService.updateTaskState(taskId, newState, userId, reason);
-        return ResponseEntity.ok(updatedTask);
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestBody(required = false) ReasonRequest request) {
+        TaskStateChangeResponse taskStateChangeResponse = taskService.updateTaskState(taskId, newState, user.getUserId(), request);
+        return ResponseEntity.ok(taskStateChangeResponse);
     }
 
+    @ManagerOrLeaderRole
     @PatchMapping("/{taskId}/assign/{userId}")
     public ResponseEntity<TaskResponse> assignUserToTask(
             @PathVariable UUID taskId,
@@ -70,6 +80,7 @@ public class TaskController {
         return ResponseEntity.ok(updatedTask);
     }
 
+    @ManagerOrLeaderRole
     @PatchMapping("/{taskId}/priority/{priority}")
     public ResponseEntity<TaskResponse> updateTaskPriority(
             @PathVariable UUID taskId,
@@ -78,59 +89,73 @@ public class TaskController {
         return ResponseEntity.ok(updatedTask);
     }
 
+    @ManagerOrLeaderRole
+    @PatchMapping("/{taskId}/description")
+    public ResponseEntity<TaskResponse> updateTaskDescription(@PathVariable UUID taskId, @RequestBody TaskDescriptionRequest taskDescriptionRequest) {
+        TaskResponse updatedTask = taskService.updateTaskDescription(taskId, taskDescriptionRequest);
+        return ResponseEntity.ok(updatedTask);
+    }
+
     //COMMENTS
+    @AnyTeamRole
     @PostMapping("/{taskId}/comments")
     public ResponseEntity<CommentResponse> addComment(
             @PathVariable UUID taskId,
-            @RequestParam UUID userId,
+            @AuthenticationPrincipal  UserPrincipal user,
             @RequestBody @Valid CommentRequest request) {
-        CommentResponse response = commentService.addComment(taskId, userId, request);
+        CommentResponse response = commentService.addComment(taskId, user.getUserId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @AnyTeamRole
     @GetMapping("/{taskId}/comments")
     public ResponseEntity<List<CommentResponse>> getCommentsForTask(@PathVariable UUID taskId) {
         return ResponseEntity.ok(commentService.getCommentsForTask(taskId));
     }
 
+    @AnyTeamRole
     @GetMapping("/{taskId}/comments/{commentId}")
     public ResponseEntity<CommentResponse> getCommentById(
             @PathVariable UUID taskId, @PathVariable UUID commentId) {
         return ResponseEntity.ok(commentService.getCommentById(commentId));
     }
 
+    @AnyTeamRole
     @PatchMapping("/{taskId}/comments/{commentId}")
     public ResponseEntity<CommentResponse> updateComment(
             @PathVariable UUID taskId,
             @PathVariable UUID commentId,
-            @RequestParam UUID userId,
+            @AuthenticationPrincipal UserPrincipal user,
             @RequestBody @Valid CommentRequest request) {
-        return ResponseEntity.ok(commentService.updateComment(commentId, userId, request));
+        return ResponseEntity.ok(commentService.updateComment(commentId, user.getUserId(), request));
     }
 
+    @AnyTeamRole
     @DeleteMapping("/{taskId}/comments/{commentId}")
     public ResponseEntity<Void> deleteComment(
             @PathVariable UUID taskId,
             @PathVariable UUID commentId,
-            @RequestParam UUID userId) {
-        commentService.deleteComment(commentId, userId);
+            @AuthenticationPrincipal UserPrincipal user) {
+        commentService.deleteComment(commentId, user.getUserId());
         return ResponseEntity.noContent().build();
     }
 
     //ATTACHMENTS
-
+    @AnyTeamRole
     @PostMapping(value = "/{taskId}/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AttachmentResponse> uploadAttachment(@PathVariable UUID taskId,
-                                                   @RequestParam UUID userId,
+                                                   @AuthenticationPrincipal UserPrincipal user,
                                                    @RequestParam("file") MultipartFile file) {
-        return ResponseEntity.ok(attachmentService.uploadAttachment(taskId, userId, file));
+        return ResponseEntity.ok(attachmentService.uploadAttachment(taskId, user.getUserId(), file));
     }
 
+    @AnyTeamRole
     @GetMapping("/{taskId}/attachments")
     public ResponseEntity<List<AttachmentResponse>> getAttachments(@PathVariable UUID taskId) {
         return ResponseEntity.ok(attachmentService.getAttachmentsByTask(taskId));
     }
 
+    @AnyTeamRole
     @GetMapping("/attachments/{attachmentId}")
     public ResponseEntity<byte[]> downloadAttachment(@PathVariable UUID attachmentId) {
         FileResponse fileResponse = attachmentService.downloadAttachment(attachmentId);
@@ -141,6 +166,7 @@ public class TaskController {
                 .body(fileResponse.data());
     }
 
+    @AnyTeamRole
     @DeleteMapping("/{taskId}/attachments/{attachmentId}")
     public ResponseEntity<Void> deleteAttachment(@PathVariable UUID attachmentId) {
         attachmentService.deleteAttachment(attachmentId);

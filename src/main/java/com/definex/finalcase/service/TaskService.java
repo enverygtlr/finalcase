@@ -6,12 +6,16 @@ import com.definex.finalcase.domain.entity.TaskStateChange;
 import com.definex.finalcase.domain.entity.User;
 import com.definex.finalcase.domain.enums.TaskPriority;
 import com.definex.finalcase.domain.enums.TaskState;
+import com.definex.finalcase.domain.request.ReasonRequest;
+import com.definex.finalcase.domain.request.TaskDescriptionRequest;
 import com.definex.finalcase.domain.request.TaskRequest;
 import com.definex.finalcase.domain.response.TaskResponse;
+import com.definex.finalcase.domain.response.TaskStateChangeResponse;
 import com.definex.finalcase.exception.ProjectNotFoundException;
 import com.definex.finalcase.exception.TaskNotFoundException;
 import com.definex.finalcase.exception.UserNotFoundException;
 import com.definex.finalcase.mapper.TaskMapper;
+import com.definex.finalcase.mapper.TaskStateChangeMapper;
 import com.definex.finalcase.repository.ProjectRepository;
 import com.definex.finalcase.repository.TaskRepository;
 import com.definex.finalcase.repository.TaskStateChangeRepository;
@@ -30,6 +34,7 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final TaskStateChangeRepository taskStateChangeRepository;
+    private final TaskStateChangeMapper taskStateChangeMapper;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final TaskMapper taskMapper;
@@ -57,14 +62,23 @@ public class TaskService {
         return tasks.stream().map(taskMapper::toResponse).toList();
     }
 
+    public TaskResponse updateTaskDescription(UUID taskId, TaskDescriptionRequest request) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(TaskNotFoundException::new);
+
+        task.setDescription(request.description());
+        return taskMapper.toResponse(taskRepository.save(task));
+    }
+
     @Transactional
-    public TaskResponse updateTaskState(UUID taskId, TaskState newState, UUID userId, String reason) {
+    public TaskStateChangeResponse updateTaskState(UUID taskId, TaskState newState, UUID userId, ReasonRequest request) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(TaskNotFoundException::new);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
+        String reason =  request != null ? request.reason() : null;
         taskStateValidator.validateStateTransition(task.getState(), newState, reason);
 
         TaskState oldState = task.getState();
@@ -78,9 +92,7 @@ public class TaskService {
         stateChange.setNewState(newState);
         stateChange.setReason(reason);
 
-        taskStateChangeRepository.save(stateChange);
-
-        return taskMapper.toResponse(task);
+        return taskStateChangeMapper.toResponse(taskStateChangeRepository.save(stateChange));
     }
 
     public TaskResponse assignUserToTask(UUID taskId, UUID userId) {

@@ -11,6 +11,7 @@ public interface AttachmentMapper {
     @Mapping(source = "task.id", target = "taskId")
     @Mapping(source = "uploadedBy.id", target = "uploadedById")
     @Mapping(target = "filePath", expression = "java(computeFilePath(attachment))")
+    @Mapping(source = "externalFileName", target = "fileName")
     AttachmentResponse toResponse(Attachment attachment);
 
     default String computeFilePath(Attachment attachment) {

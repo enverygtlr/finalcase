@@ -22,6 +22,27 @@ public class GlobalExceptionController {
         return getErrorResponse(baseErrorMessage.getTitle(), baseErrorMessage.getMessage(), ex.getHttpStatus(), request);
     }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleAllExceptions(Exception ex, WebRequest request) {
+        return getErrorResponse(
+                "Unexpected Error",
+                ex.getMessage() != null ? ex.getMessage() : "Internal server error",
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                request
+        );
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex, WebRequest request) {
+        return getErrorResponse(
+                "Runtime Error",
+                ex.getMessage(),
+                HttpStatus.BAD_REQUEST,
+                request
+        );
+    }
+
+
     private ResponseEntity<ErrorResponse> getErrorResponse(String title, String message,
                                                            HttpStatus httpStatus, WebRequest request) {
         var errorResponse = ErrorResponse.builder()

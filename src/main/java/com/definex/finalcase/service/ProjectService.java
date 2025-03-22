@@ -6,6 +6,7 @@ import com.definex.finalcase.domain.request.ProjectRequest;
 import com.definex.finalcase.domain.response.ProjectResponse;
 import com.definex.finalcase.domain.response.UserResponse;
 import com.definex.finalcase.exception.ProjectNotFoundException;
+import com.definex.finalcase.exception.UserDuplicateInProjectException;
 import com.definex.finalcase.exception.UserNotFoundException;
 import com.definex.finalcase.mapper.ProjectMapper;
 import com.definex.finalcase.mapper.UserMapper;
@@ -69,6 +70,10 @@ public class ProjectService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
+
+        if (project.getTeamMembers().contains(user)) {
+            throw new UserDuplicateInProjectException();
+        }
 
         project.getTeamMembers().add(user);
         return projectMapper.toResponse(projectRepository.save(project));
