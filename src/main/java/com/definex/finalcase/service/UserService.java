@@ -63,4 +63,12 @@ public class UserService {
 
         return userMapper.toResponse(userRepository.save(user));
     }
+
+    public UserResponse deleteUser(UUID id) {
+        User user = userRepository.findById(id)
+                        .orElseThrow(UserNotFoundException::new);
+
+        userRepository.delete(user);
+        return userMapper.toResponse(user);
+    }
 }

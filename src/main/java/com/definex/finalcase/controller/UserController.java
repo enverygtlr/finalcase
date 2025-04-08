@@ -60,4 +60,11 @@ public class UserController {
         UserResponse response = userService.updateUserRole(id, role);
         return ResponseEntity.ok(response);
     }
+
+    @ProjectManagerRole
+    @DeleteMapping("/{id}")
+    public ResponseEntity<UserResponse> deleteUser(@PathVariable UUID id) {
+        UserResponse response = userService.deleteUser(id);
+        return ResponseEntity.ok(response);
+    }
 }
